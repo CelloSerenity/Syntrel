@@ -49,6 +49,7 @@ intents.presences = True
 """
 
 intents = discord.Intents.default()
+intents.dm_messages = True
 
 """
 Uncomment this if you want to use prefix (normal) commands.
