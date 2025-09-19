@@ -8,3 +8,11 @@ CREATE TABLE IF NOT EXISTS `warns` (
   `reason` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS `dm_relays` (
+  `user_id` varchar(20) NOT NULL PRIMARY KEY,
+  `channel_id` varchar(20) NOT NULL,
+  `webhook_id` varchar(20) NOT NULL,
+  `webhook_token` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

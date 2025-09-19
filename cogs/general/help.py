@@ -76,6 +76,8 @@ class Help(commands.Cog, name="help"):
             "shutdown": "owner",
             "say": "owner",
             "invite": "owner",
+            "dm": "owner",
+            "close_dm": "owner",
             
             # Miscellaneous Commands
             "keanu": "miscellaneous",

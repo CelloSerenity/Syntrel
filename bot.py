@@ -144,40 +144,27 @@ class DiscordBot(commands.Bot):
         cogs_path = f"{os.path.realpath(os.path.dirname(__file__))}/cogs"
         disabled_env = os.getenv("DISABLED_COGS", "")
         disabled_cogs = {entry.strip().lower() for entry in disabled_env.split(",") if entry.strip()}
-        
-        for folder in os.listdir(cogs_path):
-            folder_path = os.path.join(cogs_path, folder)
-            if os.path.isdir(folder_path) and not folder.startswith('__'):
-                for file in os.listdir(folder_path):
-                    if file.endswith(".py") and not file.startswith('__'):
-                        extension = file[:-3]
-                        full_name = f"{folder}.{extension}".lower()
-                        if extension.lower() in disabled_cogs or full_name in disabled_cogs:
-                            self.logger.info(f"Skipped disabled extension '{full_name}'")
-                            continue
-                        try:
-                            await self.load_extension(f"cogs.{folder}.{extension}")
-                            self.logger.info(f"Loaded extension '{folder}.{extension}'")
-                        except Exception as e:
-                            exception = f"{type(e).__name__}: {e}"
-                            self.logger.error(
-                                f"Failed to load extension {folder}.{extension}\n{exception}"
-                            )
-        
-        for file in os.listdir(cogs_path):
-            if file.endswith(".py") and not file.startswith('__'):
-                extension = file[:-3]
-                if extension.lower() in disabled_cogs:
-                    self.logger.info(f"Skipped disabled extension '{extension}'")
+
+        for root, _, files in os.walk(cogs_path):
+            package_path = os.path.relpath(root, cogs_path)
+            for file in files:
+                if not file.endswith(".py") or file.startswith("__"):
+                    continue
+                module_name = file[:-3]
+                parts = [] if package_path == "." else package_path.split(os.sep)
+                dotted = ".".join(["cogs", *parts, module_name]) if parts else f"cogs.{module_name}"
+
+                short_name = module_name.lower()
+                full_name = ".".join(parts + [module_name]).lower() if parts else module_name.lower()
+                if short_name in disabled_cogs or full_name in disabled_cogs or dotted.lower() in disabled_cogs:
+                    self.logger.info(f"Skipped disabled extension '{full_name}'")
                     continue
                 try:
-                    await self.load_extension(f"cogs.{extension}")
-                    self.logger.info(f"Loaded extension '{extension}'")
+                    await self.load_extension(dotted)
+                    self.logger.info(f"Loaded extension '{full_name}'")
                 except Exception as e:
                     exception = f"{type(e).__name__}: {e}"
-                    self.logger.error(
-                        f"Failed to load extension {extension}\n{exception}"
-                    )
+                    self.logger.error(f"Failed to load extension {full_name}\n{exception}")
 
     @tasks.loop(minutes=1.0)
     async def status_task(self) -> None:
